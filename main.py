@@ -6,24 +6,25 @@ print(Fore.WHITE + 'Done Start!')
 
 tprint("K i l l e r")
 
-print(Fore.RED + "[K] Attack A Computer On An Intranet Through Arp")
+print(Fore.RED + "[K] 使用Arp攻击一个内网的计算机")
 print(Fore.GREEN + """
-[D] Propagate The File To The Target Computer
-[S] Scan All IPs Of The Internal Network
-[A] About The Program
-[E] Exit The Program
+[D] 发送文件到内网的计算机
+[S] 扫描所有内网的活跃IP
+[A] 关于这个程序
+[E] 退出程序
 """)
-
-do = input(Fore.GREEN + "What You Want To Do? >>>")
-if do == 'K':
-    subprocess.run(['python', 'kill.py'])
-elif do == 'S':
-    import ip
-    ip.Scan_for_IP
-elif do == 'D':
-    subprocess.run(['python', 'port.py'])
-elif do == 'E':
-    print("Bye!")
-elif do == 'A':
-    print("""
-    GitHub : https://github.com/xiaozhao45/Killer""")
+while True:
+    do = input(Fore.GREEN + "\n你要做什么? >>>")
+    if do == 'K':
+        import kill
+    elif do == 'S':
+        import ip
+        ip.Scan_for_IP
+    elif do == 'D':
+        import send
+    elif do == 'E':
+        print("Bye!")
+        break
+    elif do == 'A':
+        print("""
+        GitHub : https://github.com/xiaozhao45/Killer""")

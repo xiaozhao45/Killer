@@ -1,11 +1,11 @@
 import socket
 
 # 设定接收数据的地址和端口
-ip = input('IP Is? >>>')
-port = input('Port Is? >>>')
+ip = input('IP 是? >>>')
+port = input('端口是? >>>')
 
 # 指定文件路径和名称
-filename = input('File Is? >>>')
+filename = input('文件是? >>>')
 
 # 创建socket对象
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -17,6 +17,6 @@ for port in range(start_port, end_port+1):
         s.close()
 
         # 如果连接成功，说明该端口是开放的
-        print('Port', port, 'is open')
+        print('端口', port, '是开放的！')
     except:
         pass

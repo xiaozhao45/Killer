@@ -2,11 +2,11 @@ from scapy.all import ARP, Ether, srp
 def Scan_for_IP():
     
     while True:
-        target_ip = input("Enter the IP address range to scan (e.g. 192.168.0.0/24): ")
+        target_ip = input("输入网段 (比如 192.168.0.0/24): ")
         if "/" in target_ip:
             break
         else:
-            print("Invalid IP address format. Please include the netmask.")
+            print("IP 地址格式无效。请包括网络掩码。")
 
     
     arp = ARP(pdst=target_ip)
