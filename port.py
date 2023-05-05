@@ -1,9 +1,9 @@
 import socket
 
-print("killer [Not Fully Developed! Only Ports Scanning Are Supported]")
+print("killer [Not fully developed, only port scanning is supported]")
 
 # 设定扫描端口范围和目标IP地址
-ip = input("The IP You Want To Scan Is? >>>")
+ip = input("The IP you want to scan is? >>>")
 start_port = 1
 end_port = 65535
 
@@ -17,6 +17,6 @@ for port in range(start_port, end_port+1):
         s.close()
 
         # 如果连接成功，说明该端口是开放的
-        print('Port', port, 'is open')
+        print('Port', port, 'is open!')
     except:
         pass
