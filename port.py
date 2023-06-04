@@ -1,6 +1,6 @@
 import socket
 
-print("killer [未完全开发，仅支持端口扫描]")
+print("port [未完全开发，仅支持端口扫描]")
 
 # 设定扫描端口范围和目标IP地址
 ip = input("你想扫描的IP是? >>>")

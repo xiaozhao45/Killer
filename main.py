@@ -15,16 +15,15 @@ print(Fore.WHITE + 'Done Start!')
 import tkinter as tk
 from tkinter import messagebox
 
-# 创建主窗口
-root = tk.Tk()
-root.withdraw()
+from PyQt5.QtWidgets import QMessageBox
 
-# 检查系统中是否安装了WinPcap
-if not os.path.exists(r"C:\Program Files\WinPcap"):
-            messagebox.showinfo("致命错误！", "未安装WinPcap!")
+if not os.path.exists("C:/Program Files (x86)/WinPcap"):
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Critical)
+    msg.setText("错误！未安装WinPcap！")
+    msg.setWindowTitle("错误")
+    msg.exec_()
 
-# 关闭主窗口
-root.destroy()
 
 tprint("K i l l e r")
 
@@ -41,7 +40,6 @@ while True:
         import kill
     elif do == 'S':
         import ip
-        ip.Scan_for_IP
     elif do == 'D':
         import send
     elif do == 'E':
@@ -49,9 +47,9 @@ while True:
         break
     elif do == 'A':
         print("""
-        Killer v2.0
-        更新内容： 1.使用py2exe进行重打包
-                   2.重写了kill.py和ip.py（也就是重写了攻击ip和ip扫描）
+        Killer v3.0
+        更新内容： 1.优化了使用体验和逻辑
+                   2.更人性化的注释（
         GitHub : https://github.com/xiaozhao45/Killer""")
     else:
          print("错误")
