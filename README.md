@@ -1,5 +1,5 @@
 # Killer
-|[ Chinese ](https://github.com/xiaozhao45/Killer/REDME_Chinese.md)| English |
+|[ Chinese ](https://github.com/xiaozhao45/Killer/blob/main/REDME_Chinese.md)| English |
 
 A portable Arp tool for intranets, including port and IP scanning and Arp attacks, but requires WinPcap to be installed
 Click main in the top left corner to view the source code in different languages
