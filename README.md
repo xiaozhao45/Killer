@@ -1,3 +1,30 @@
 # Killer
-一款便携的Arp工具，适用于内网，包含了端口及IP扫描和Arp攻击等，但需要安装WinPcap
-点击左上角 main (主要)来查看不同语言的源码
+|[ Chinese ](https://github.com/xiaozhao45/Killer/REDME_Chinese.md)| English |
+
+A portable Arp tool for intranets, including port and IP scanning and Arp attacks, but requires WinPcap to be installed
+Click main in the top left corner to view the source code in different languages
+
+---
+# Support System
+  ###   Windows11、Windows10
+  ###   Windows7（NO TEST）
+---
+# Required Python library
+1. PyQt5
+2. sys
+3. scapy
+4. art
+5. os
+6. tiptext (This program is included)
+7. random
+8. colorama
+9. socket
+10. Pyinstaller
+---
+# How to Build
+1. Configure the environment and install the required libraries
+2. Download all the files under the desired language branch
+3. Run the package.bat or "打包.bat" under the project
+4. Find your build in the generated dist directory
+---
+# 
