@@ -1,9 +1,24 @@
 import socket
 
+######################
+#Port Scan V4.0
+######################
+#################
+#By xiaozhao45
+#################
+
+
 print("port [未完全开发，仅支持端口扫描]")
 
 # 设定扫描端口范围和目标IP地址
-ip = input("你想扫描的IP是? >>>")
+ip = input("你想扫描的IP是,键入A扫描? >>>")
+while True:
+    if ip == "":
+        ip = input("你想扫描的IP是? >>>")
+    if ip == "A":
+        import ip
+    else:
+        break
 start_port = 1
 end_port = 65535
 
@@ -20,3 +35,5 @@ for port in range(start_port, end_port+1):
         print('端口', port, '是开放的！')
     except:
         pass
+
+print('完毕，正在退出...')

@@ -1,8 +1,28 @@
 import socket
 from scapy.all import ARP, Ether, srp
+import sys
 
-# 年轻人，你想扫这个IP还是这个IP？
-target_ip = input("键入网关，比如：192.168.1.0/24  >>")
+######################
+#IP Scan V4.0
+######################
+#################
+#By xiaozhao45
+#################
+
+
+
+while True:
+    target_ip = input("键入网关，比如：192.168.1.0/24,输入A自动获取，退出请键入E  >>")
+    target_ip = target_ip.upper()
+    if target_ip == 'A':
+        import net
+    elif target_ip == '':
+        print("请输入正确的IP！")
+    elif target_ip == 'E':
+        print("Bye!")
+        sys.exit()
+    else:
+        break
 
 # 数据包
 arp = ARP(pdst=target_ip)
@@ -17,7 +37,7 @@ devices = []
 for sent, received in result:
     devices.append({'ip': received.psrc, 'mac': received.hwsrc})
 
-# 输出
+# 输出                                                                                                                                                                                          
 for device in devices:
     if device['ip'] == '192.168.1.1':
         hostname = 'Gateway / Router'
@@ -29,4 +49,4 @@ for device in devices:
             hostname = 'Unknown'
     print(f"IP: {device['ip']}, MAC: {device['mac']}, 设备名: {hostname}")
 
-    
+print('完毕，正在退出...')
