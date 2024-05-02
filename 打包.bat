@@ -1,1 +1,0 @@
-Pyinstaller -F main.py -p ip.py -p port.py -p kill.py -p net.py -p tiptext.py -i Killer.ico
