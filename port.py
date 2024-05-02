@@ -1,22 +1,39 @@
 import socket
 
-print("killer [Not fully developed, only port scanning is supported]")
+######################
+#Port Scan V4.0
+######################
+#################
+#By xiaozhao45
+#################
 
-# 设定扫描端口范围和目标IP地址
-ip = input("The IP you want to scan is? >>>")
+
+print("Port scan v4.0")
+
+# Set the scanning port range and target IP address
+ip = input("What IP address do you want to scan,input A to scan all IPs! >>>")
+while True:
+    if ip == "":
+        ip = input("What IP address do you want to scan?The previous input is invalid! >>>")
+    if ip == "A":
+        import ip
+    else:
+        break
 start_port = 1
 end_port = 65535
 
-# 循环扫描指定IP地址的所有端口
+# Loop scan all ports with specified IP addresses
 for port in range(start_port, end_port+1):
     try:
-        # 创建socket对象并尝试连接
+        # Try to connect
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)  # 设置超时时间为1秒
+        s.settimeout(1)  # timeout 1 second  
         s.connect((ip + str(port), port))
         s.close()
 
-        # 如果连接成功，说明该端口是开放的
-        print('Port', port, 'is open!')
+        # if open
+        print('Port:', port, 'Is open!')
     except:
         pass
+
+print('Done, exiting...')

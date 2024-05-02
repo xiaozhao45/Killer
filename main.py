@@ -1,86 +1,109 @@
-from art import *
-from colorama import init, Fore, Back, Style
-import subprocess
+from art import * # type: ignore
+from colorama import Fore # type: ignore
+from PyQt5.QtWidgets import QApplication, QMessageBox,QWidget
 import os
-import time
-import os
-from functools import partial
+import sys
+import tiptext
+import random
 
 
-# 清空终端内容
+
+
+##Initiation phase  
+##############################################################
+#Clear the screen and prompt to complete startup
 os.system('cls' if os.name == 'nt' else 'clear')
-
 print(Fore.WHITE + 'Done Start!')
 
-import tkinter as tk
-from tkinter import messagebox
 
-# 创建主窗口
-root = tk.Tk()
-root.withdraw()
 
-# 检查系统中是否安装了WinPcap
-if not os.path.exists(r"C:\Program Files\WinPcap"):
-            messagebox.showinfo("Fatal error!", "WinPcap is not installed!")
+# Variable names in the TipText module
+variable_names = ['tiptext_01', 'tiptext_02', 'tiptext_03', 'tiptext_04', 'tiptext_05',
+                  'tiptext_06', 'tiptext_07', 'tiptext_08', 'tiptext_09', 'tiptext_10']
 
-# 关闭主窗口
-root.destroy()
+# Randomly select a variable name from a TipText module  
+selected_variable_name = random.choice(variable_names)
 
-tprint("K i l l e r")
+# Use getattr to obtain variable values in module tiptext  
+selected_value = getattr(tiptext, selected_variable_name)
 
-print(Fore.RED + "[K] Use ARP to attack computers on an intranet")
+
+#Create PyQt window for QMessageBox  
+from PyQt5.QtWidgets import QMessageBox
+app = QApplication(sys.argv)
+app.setQuitOnLastWindowClosed(False)  
+window = QWidget()
+window.setVisible(False)  # Ensure that the window is not visible
+##############################################################
+
+
+
+
+
+
+
+##Environmental testing  
+##############################################################
+if not os.path.exists("C:/Program Files (x86)/WinPcap"):
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Critical)
+    msg.setText("Error! WinPcap not installed! ")
+    msg.setWindowTitle("Error")
+    msg.exec_()
+##############################################################
+
+
+
+
+
+
+
+##Main program  
+##############################################################
+
+tprint("K i l l e r") # type: ignore
+
+print(selected_value)
+print("\n")
+
+print(Fore.RED + "[K] Using Arp to attack a computer on an intranet  ")
 print(Fore.GREEN + """
-[D] Send files to computers on the intranet
-[S] Scan all active IP addresses on the private network
-[A] About this app
-[E] Exit the program
+[S] Scan all active IPs in the internal network
+[N] Obtain local IP, gateway, and MAC addresses 
+[P] Scan open ports for specified LAN IPs 
+[A] About this program  
+[E] Exit program  
 """)
 while True:
-    do = input(Fore.GREEN + "\nWhat are you want to do? >>>")
+    do = input(Fore.GREEN + "\nWhat are you going to do? Input letter >>>")
+    do = do.upper()
     if do == 'K':
         import kill
     elif do == 'S':
         import ip
-        ip.Scan_for_IP
     elif do == 'D':
-        import send
+        print("Removed!")
+    elif do == 'N':
+        import net
+    elif do == 'P':
+        import port
     elif do == 'E':
-        print("Bye!")
+        print('Done, exiting...')
         break
     elif do == 'A':
         print("""
-        Killer v2.0
-        What's new: 1. Repackage using py2exe
-                   2. Rewrote kill.py and ip.py (i.e. rewrote attack IP and IP scanning)
+        Killer v4.0 (English)
+        Update content : 
+                   1.Remove the function of sending files
+                   2.Fix some errors in Kill functionality  
+                   3.Update header text  
+                   4.Add IP scanning function exit button  
+                   5.Others
+
         GitHub : https://github.com/xiaozhao45/Killer""")
     else:
          print("Error!")
 
-"""
-
-                       _oo0oo_
-                      o8888888o
-                      88" . "88
-                      (| -_- |)
-                      0\  =  /0
-                    ___/`---'\___
-                  .' \\|     |// '.
-                 / \\|||  :  |||// \
-                / _||||| -:- |||||- \
-               |   | \\\  -  /// |   |
-               | \_|  ''\---/''  |_/ |
-               \  .-\__  '-'  ___/-. /
-             ___'. .'  /--.--\  `. .'___
-          ."" '<  `.___\_<|>_/___.' >' "".
-         | | :  `- \`.;`\ _ /`;.`/ - ` : | |
-         \  \ `_.   \_ __\ /__ _/   .-` /  /
-     =====`-.____`.___ \_____/___.-`___.-'=====
-                       `=---='
-
-
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-               God forbid, there will never be loopholes
-               Wait, is this God?
-
-"""
+##############################################################
+## Program End ###############################################
+##############################################################
