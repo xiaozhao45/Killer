@@ -1,9 +1,10 @@
 
-use std::io::{stdout, Write};//idk
-use rand::Rng; //random tip text
+use std::io::{stdout, Write};// idk
+use rand::Rng; // random tip text
 use colored::*; // terminal coloring
+//use pnet::*;     // pnet
+use std::process; // exit program
 
-use std::process; //exit program
 
 
 
@@ -17,8 +18,7 @@ const TIPTEXT_07: &str = "这里是作者的一些提示，您完全可以相信
 const TIPTEXT_08: &str = "Killer 5.0使用了Rust来重写，Killer 4.0则是纯Python开发。";
 const TIPTEXT_09: &str = "至少未来5个版本，Killer将不会开发GUI版本";
 const TIPTEXT_10: &str = "Killer的作者：xiaozhao45，如果您要Fork本项目，您可以修改这些提示信息，也可以留着，但请不要删除。";
-
-
+const TIPTEXT_11: &str = "Killer 未来的开发趋势是自动化、多功能、跨平台，将专注于网络相关。";
 
 
 
@@ -35,7 +35,7 @@ fn main(){
                                     
     "#);   // header text
     let mut rng = rand::thread_rng();
-    let random_index = rng.gen_range(0..10);
+    let random_index = rng.gen_range(0..11);
 
     let tiptext = match random_index {
         0 => TIPTEXT_01,
@@ -48,6 +48,7 @@ fn main(){
         7 => TIPTEXT_08,
         8 => TIPTEXT_09,
         9 => TIPTEXT_10,
+        10 => TIPTEXT_11,
         _ => unreachable!(),
     };
 
@@ -62,7 +63,8 @@ fn main(){
     [S] 扫描所有内网的活跃IP
     [N] 获取本机IP、网关和MAC地址
     [P] 扫描指定局域网IP的开放端口
-    [A] 关于这个程序
+    [A] 关于这个程序&帮助页面
+    [T] 此程序的设置选项
     [E] 退出程序
     "#.green());
 
@@ -72,28 +74,61 @@ fn main(){
     //while loop
     while loop_conlrol == true {
         if user_input == "K" {
-
-            print!("pass")
-        } else if user_input == "S" {
             
+            
+        } else if user_input == "S" {
+
         } else if user_input == "N" {
             
+            println!(r#"
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃       NetWork Info       ┃
+            ┣━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+            ┃ 网络状态 ：[]┃ 位置 ：[]   ┃
+            ┣━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+            ┃ 网关地址 []
+            ┃ 本机地址 []
+            ┃ 物理地址 []
+            ┣──────────────────────────┫
+            ┃ ：物理地址是MAC地址        ┃
+            ┃ ：只是因为MAC地址不全是半角 ┃
+            ┃ ：字符, 所以会无法垂直对齐  ┃
+            ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+            
+
+            "#)
         } else if user_input == "P" {
             
         } else if user_input == "A" {
             println!(r#"
             关于程序：
-                                Killer v5.0
+                                Killer v5.0 [RustVersion]
                                 在这个版本，Killer使用Rust重写，旨在高性能和跨平台。
-
+                                **********************
             作者信息：
                                 2024年，由xiaozhao45编写而成。
                                 开源于Github，完全自由使用。
                                 https://github.com/xiaozhao45/Killer
             免责声明：
+                                *****************************
                                 自你运行此软件，你将承担所有风险。
                                 作者不对进行非法用途产生的任何后果负责。
+                                ************************
+            错误代码：
+                                0x00：未连接到互联网
+                                0x01：无法连接到目标主机
+                                0x02：被用户中断操作
+                                0x03：参数错误
+                                0x0x：未知错误，请携带日志提交issues
+            其他信息：
+                                1.在Killer的安装目录下有killer.log日志文件。
+                                2.同样在安装目录下的config目录下有Killer的配置文件。
+            
             "#);
+
+
+        } else if user_input == "T" {
+            
         } else if user_input == "E" {
             println!( "正在退出...");
             process::exit(0); 
@@ -105,3 +140,12 @@ fn main(){
 
 
 // Anybody Here？
+
+
+
+//*****************************//
+//功能函数 - Kill;Scan;Net;Port //
+//*****************************//
+//Last Update: 2024/07/12
+//***********//
+

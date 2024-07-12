@@ -6,6 +6,5 @@ edition = "2021"
 [dependencies]
 rand = "0.8.5"
 colored = "2.1.0"
-pcap = "1.0"
-
+pnet = "0.29.0"
 
