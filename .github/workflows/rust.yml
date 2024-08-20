@@ -1,0 +1,20 @@
+name: Pre-view Build
+
+on:
+  push:
+    branches: [ "RuKiller" ]
+  pull_request:
+    branches: [ "RuKiller" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Pre-view Build
+      run: cargo build -r
