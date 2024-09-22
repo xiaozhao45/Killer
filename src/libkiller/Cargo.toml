@@ -1,0 +1,9 @@
+[package]
+name = "killer_core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pcap = "2.2.0"
+argparse = "^0.2"
+nix = "^0.26.2"
