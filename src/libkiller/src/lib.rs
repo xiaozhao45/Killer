@@ -13,7 +13,6 @@ pub struct ArgOptions {
     pub target_ip: Ipv4Addr,
     pub gateway_ip: Ipv4Addr,
     pub ip_forward: bool,
-    pub log_traffic: bool,
 }
 
 fn resolve_own_ip_addr(device: &Device) -> Option<Ipv4Addr> {

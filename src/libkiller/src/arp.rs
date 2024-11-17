@@ -212,26 +212,3 @@ pub fn resolve_mac_addr(
     join_handle.join().unwrap()
 }
 
-
-pub fn log_traffic_pcap(
-    cap: &mut pcap::Capture<pcap::Active>,
-    log_file: &Path,
-) -> Result<(), pcap::Error> {
-    let mut savefile = cap.savefile(log_file)?;
-
-    let mut last_print = Instant::now();
-    let print_threshold = Duration::from_secs(15);
-    loop {
-        let packet = cap.next_packet()?;
-        savefile.write(&packet);
-        savefile.flush()?;
-        if last_print.elapsed() > print_threshold {
-            let stats = cap.stats()?;
-            println!(
-                "\r已接受: {}, 已丢弃: {}",
-                stats.received, stats.dropped
-            );
-            last_print = Instant::now()
-        }
-    }
-}
